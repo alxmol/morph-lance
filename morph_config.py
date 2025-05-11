@@ -259,7 +259,27 @@ class MorphConfig:
             if clone_result.exit_code != 0:
                 print(f"Error cloning repository: {clone_result.stderr}")
                 raise RuntimeError(f"Failed to clone repository: {clone_result.stderr}")
-            
+            # Safely patch Dockerfile_x86 so the build uses --ignore-installed.
+            # BusyBox's sed (common on minimal images) requires an explicit suffix for -i,
+            # so we use -i'' which works on both GNU sed and BusyBox sed.
+            # We also guard with grep to avoid re‑patching if the line is already updated.
+            patch_cmd = (
+                "grep -q -- '--ignore-installed' SWELancer-Benchmark/Dockerfile_x86 || "
+                "sed -i'' -e "
+                "'s|python3\\.12 -m pip install --no-cache-dir -r requirements.txt|"
+                "python3.12 -m pip install --upgrade --no-cache-dir --ignore-installed -r requirements.txt|' "
+                "SWELancer-Benchmark/Dockerfile_x86"
+            )
+            ssh.run(['bash', '-lc', patch_cmd]).raise_on_error()
+
+            # Now append an Ansible install step (guarded so we don't double-append)
+            print("Patching Dockerfile_x86 to install ansible")
+            patch_ansible_cmd = (
+                "grep -q 'ansible-playbook' SWELancer-Benchmark/Dockerfile_x86 || "
+                "echo -e '\nRUN apt-get update && apt-get install -y ansible --no-install-recommends\n' >> SWELancer-Benchmark/Dockerfile_x86"
+            )
+            ssh.run(['bash', '-lc', patch_ansible_cmd]).raise_on_error()
+
             # Get current directory for absolute paths
             home_dir = ssh.run(["pwd"]).stdout.strip()
             dockerfile_path = f"{home_dir}/{expected_dockerfile_path}"

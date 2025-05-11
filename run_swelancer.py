@@ -6,7 +6,7 @@ from swelancer import SWELancerEval
 import argparse
 import nanoeval
 from nanoeval.evaluation import EvalSpec, RunnerArgs
-from nanoeval.recorder import dummy_recorder
+from nanoeval.recorders import dummy_recorder, json_recorder
 from nanoeval.setup import nanoeval_entrypoint
 from morph_agent import SimpleAgentSolver as MorphAgentSolver
 from swelancer_agent import SimpleAgentSolver as SwelancerAgentSolver
@@ -39,7 +39,7 @@ async def main() -> None:
                 concurrency=1,
                 experimental_use_multiprocessing=False,
                 enable_slackbot=False,
-                recorder=dummy_recorder(),
+                recorder=json_recorder(),
                 max_retries=5
             ),
         )
