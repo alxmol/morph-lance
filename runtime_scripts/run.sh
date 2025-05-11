@@ -48,7 +48,7 @@ else
     ansible-playbook -i "localhost," --connection=local /app/tests/setup_expensify.yml
     ansible-playbook -i "localhost," --connection=local /app/tests/setup_mitmproxy.yml
 
-    # Set an environment variable to indicate that the setup is done
+    # Indicate that the full setup (including ansible playbooks) has finished
     echo "done" > /setup_done.txt
 fi
 
