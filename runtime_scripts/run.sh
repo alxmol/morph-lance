@@ -3,6 +3,8 @@
 set -e
 if [ "$EVAL_VARIANT" = "swe_manager" ]; then
     echo "EVAL_VARIANT is set to swe_manager. Skipping setup steps."
+    # Even if we skip the full setup, signal to the benchmark harness that setup has completed
+    echo "done" > /setup_done.txt
 else
     # Start Xvfb for a virtual display
     echo "Starting Xvfb on display :99..."
